@@ -5,9 +5,11 @@ import 'element-ui/lib/theme-default/index.css'
 import Element from 'element-ui'
 import App from './App'
 import router from './router'
-
+import axios from 'axios'
 Vue.config.productionTip = false
 Vue.use(Element)
+Vue.prototype.$http = axios
+Vue.prototype.baseUrl="http://127.0.0.1:8081/apitools"
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

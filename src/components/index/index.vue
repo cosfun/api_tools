@@ -1,10 +1,10 @@
 <template>
   <div>
     <h1 class="title">快速使用指南</h1>
-  <el-collapse class="content" v-model="activeNames" @change="handleChange">
+  <el-collapse class="content" >
     <el-collapse-item title="注册账号" name="1">
-      <div>不需要注册，只用在 设置>我的信息 中填入你的手机号。</div>
-      <div>请不要冒充他人或随意填写。</div>
+      <div>不需要注册，只用在 设置>我的信息 中填入你的手机号后登陆。</div>
+      <div>请不要冒充他人或随意填写。(会根据你的账号联系你反馈问题)</div>
     </el-collapse-item>
     <el-collapse-item title="反馈 Feedback" name="2">
       <div>控制反馈：通过界面样式和交互动效让用户可以清晰的感知自己的操作；</div>
