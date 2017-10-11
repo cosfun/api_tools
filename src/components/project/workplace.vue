@@ -9,7 +9,7 @@
         <el-dropdown-item  v-for="item in appTableData" :command="item.name">{{item.name}}</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
-    <el-button>GET</el-button>
+    <el-button @click="getData()">GET</el-button>
       <el-input style="width: 160px;margin-left: 70px"></el-input>
       <el-input style="width: 160px;margin-left: 5px"></el-input>
       <el-button>请求</el-button>
@@ -27,7 +27,7 @@
         @row-click='handleRowHandle'
       >
         <el-table-column
-          prop="url"
+          prop="uri"
           label="请求列表"
           width="120px">
         </el-table-column>
@@ -89,21 +89,7 @@
      return{
        appTableData:[],
        selectName:"",
-       postList:[
-         {url:"index",state:"true"},
-         {url:"index",state:"error"},
-         {url:"index",state:"false"},
-         {url:"index",state:"warn"},
-         {url:"index",state:"warn"},
-         {url:"index324324324324",state:"warn"},
-         {url:"index",state:"warn"},
-         {url:"index",state:"warn"},
-         {url:"index",state:"warn"},
-         {url:"index",state:"warn"},
-         {url:"index",state:"warn"},
-         {url:"index",state:"warn"}
-
-         ],
+       postList:[],
        radio: '1',
        params:[
          {key:"name",value:"value",desc:"des"},
@@ -163,6 +149,19 @@
      },
      handleRowHandle:function(value){
        console.log(value.url)
+     },
+     getData:function(){
+       this.$http.get(this.baseUrl+"/url")
+         .then((response)=>{
+
+           if(response.data.success){
+              this.postList=response.data.list;
+
+           }
+         })
+         .catch((err)=>{
+
+         })
      }
    }
  }
