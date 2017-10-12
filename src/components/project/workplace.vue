@@ -10,11 +10,11 @@
       </el-dropdown-menu>
     </el-dropdown>
       编号
-      <el-input v-model="id" style="width: 60px"></el-input>
-    <el-button @click="getData()">GET</el-button>
-      <el-button @click="getHistory()">历史</el-button>
-      <el-button @click="getBug()">BUG</el-button>
-      <el-input v-model="host" style="width: 160px;margin-left: 20px"></el-input>
+      <el-input v-model="inputid" style="width: 60px"></el-input>
+    <el-button @click="changeType(1)">GET</el-button>
+      <el-button @click="changeType(2)">历史</el-button>
+      <el-button @click="changeType(3)">BUG</el-button>
+      <el-input v-model="host" style="width: 160px;margin-left: 80px"></el-input>
       <el-input v-model="uri"  style="width: 250px;margin-left: 5px"></el-input>
       <el-button @click="postAgain()">请求</el-button>
       <el-radio-group v-model="radio" style="margin-left: 20px" @change="change">
@@ -31,12 +31,13 @@
         on-color="#58B7FF"
         off-color="#13ce66">
       </el-switch>
+      {{id}}
     </div>
     <el-row  >
-      <el-col :span="7"> <el-table
+      <el-col :span="8"> <el-table
         :data="postList"
         border
-        style="width: 440px;margin-top:10px;height: 100%"
+        style="width: 480px;margin-top:10px;height: 100%"
         @row-click='handleRowHandle'
       >
         <el-table-column
@@ -47,17 +48,19 @@
         <el-table-column
           prop="uri"
           label="请求列表"
-          width="300px">
+          width="320px">
         </el-table-column>
         <el-table-column
           label="状态"
-          width="69px"
+          width="89px"
         >
           <template scope="scope"  >
             <span  v-if="scope.row.state==='true'" style="display:block;color: #FFFFFF;background-color: #20A0FF;width: 100%;height: 100%">{{scope.row.state}}</span>
             <span v-if="scope.row.state==='false'" style="display:block;color: #FFFFFF;background-color: #13CE66;width: 100%;height: 100%" >{{scope.row.state}}</span>
             <span v-if="scope.row.state==='warn'" style="display:block;color: #FFFFFF;background-color: #F7BA2A;width: 100%;height: 100%">{{scope.row.state}}</span>
-            <span v-if="scope.row.state==='error'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
+            <span v-if="scope.row.state==='bug'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
+            <span v-if="scope.row.state==='buged'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
+            <span v-if="scope.row.state==='wait'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -155,7 +158,9 @@
        jsonSwitch:true, //true json false sql
        selectParams:"",  //选中参数
        des:"",
-       step:1
+       step:1,
+       inputid:"",
+       type:"1"
      }
    },
    mounted(){
@@ -176,23 +181,38 @@
      }
    },
    methods:{
+     changeType(value){
+       console.log("tt="+value)
+       this.type=value
+       if(value==1){
+         this.getData()
+       }else if(value==2){
+         this.getHistory()
+       }else if(value==3){
+         this.getBug()
+       }
+     },
      getApp:function(){
+       console.log("getapp")
        this.$http.get(this.baseUrl+"/app")
          .then((reponse)=>{
            if(reponse.data.success){
              this.appTableData=reponse.data.list
+             this.messageSystem(0)
            }
            console.log(this.appTableData)
          })
          .catch((err)=>{
-
+           this.messageSystem(1)
          })
      },
      handleSelectionChange:function (value) {
+
        let params=new Array();
        for(let i=0;i<value.length;i++) {
          params.push(value[i].name)
        }
+       console.log(params)
        this.selectParams=params;
      },//参数选中除法
      choose:function(value){
@@ -240,23 +260,39 @@
        //des
        this.des=value.des
        //step
-       this.step=value.step
+       this.step=parseInt(value.step)
      },//列表点击事件除法
      getData(){
        let params=new URLSearchParams();
        params.append("appCode",this.selectApp)
-       params.append("id",this.id)
+       params.append("id",this.inputid)
        this.$http.post(this.baseUrl+"/urlHistory",params)
          .then((response)=>{
 
            if(response.data.success){
               this.postList=response.data.list;
+              this.messageSystem(1)
            }
          })
          .catch((err)=>{
 
          })
      },//获取最新路径
+     getBug(){
+       let params=new URLSearchParams();
+       params.append("appCode",this.selectApp)
+       params.append("bug","1")
+       this.$http.post(this.baseUrl+"/urlHistory",params)
+         .then((response)=>{
+           if(response.data.success){
+             this.postList=response.data.list;
+             this.messageSystem(1)
+           }
+         })
+         .catch((err)=>{
+
+         })
+     },//获取BUG列表
      checked(){//选中参数
        for(let i=0;i<this.params.length;i++) {
          this.$refs.table.toggleRowSelection(this.params[i], true);
@@ -317,6 +353,7 @@
          for(let i=0;i<this.selectParams.length;i++) {
            for(let j=0;j<this.params.length;j++){
              if(this.selectParams[i]==this.params[j].name){
+               console.log(this.selectParams[i]+"="+this.params[j].name)
                params.append(this.selectParams[i],this.params[j].arg);
                break;
              }
@@ -325,15 +362,12 @@
         console.log(params)
        this.$http.post(this.host+this.uri,params)
          .then((response)=>{
-           console.log("response="+response.data)
-           if(response.data.success){
              this.result=response.data
              this.fresult =this.syntaxHighlight(this.result)
              if(this.jsonSwitch) {
                document.getElementsByClassName('jsonclass')[0].innerHTML = this.fresult;
              }
-           }
-            this.messageSystem(1);
+             this.messageSystem(1);
          })
          .catch((err)=>{
            this.messageSystem(2);
@@ -349,25 +383,34 @@
        }
      },
      putBug:function(){
-       let id=localStorage.getItem("userId")
-        if(id==0){
+       let userid=localStorage.getItem("userId")
+        if(userid==0){
           this.messageSystem("认证用户才能反馈BUG")
           return;
         }
        let params=new URLSearchParams();
        params.append("des",this.des)
+       params.append("userid",userid)
        params.append("id",this.id)
        params.append("step",this.step)
        this.$http.post(this.baseUrl+"/putBug",params)
          .then((response)=>{
            if(response.data.success){
               this.messageSystem(1)
+
+             if(this.type==1) {
+               this.getData()
+             }else if(this.type==2){
+                this.getHistory()
+             }else if(this.type==3){
+               this.getBug()
+             }
            }else{
-             this.messageSystem(2)
+             this.messageSystem(response.data.info)
            }
          })
          .catch((err)=>{
-            this.messageSystem(2)
+            this.messageSystem(err)
          })
      },//修改bug状态
      stepSub:function() {
@@ -379,6 +422,21 @@
        if (this.step <4 ) {
          this.step++
        }
+     },
+     getHistory:function(){
+       let params=new URLSearchParams();
+       params.append("appCode",this.selectApp)
+       params.append("id",this.inputid)
+       this.$http.post(this.baseUrl+"/urlNameHistory",params)
+         .then((response)=>{
+           if(response.data.success){
+             this.postList=response.data.list;
+             this.messageSystem(1)
+           }
+         })
+         .catch((err)=>{
+
+         })
      }
    }
  }
