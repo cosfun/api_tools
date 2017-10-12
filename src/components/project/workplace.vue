@@ -12,14 +12,25 @@
       编号
       <el-input v-model="id" style="width: 60px"></el-input>
     <el-button @click="getData()">GET</el-button>
-      <el-input v-model="host" style="width: 160px;margin-left: 70px"></el-input>
+      <el-button @click="getHistory()">历史</el-button>
+      <el-button @click="getBug()">BUG</el-button>
+      <el-input v-model="host" style="width: 160px;margin-left: 20px"></el-input>
       <el-input v-model="uri"  style="width: 250px;margin-left: 5px"></el-input>
-      <el-button>请求</el-button>
+      <el-button @click="postAgain()">请求</el-button>
       <el-radio-group v-model="radio" style="margin-left: 20px" @change="change">
         <el-radio :label="1">默认</el-radio>
         <el-radio :label="2">本地</el-radio>
         <el-radio :label="3">服务</el-radio>
       </el-radio-group>
+      <el-switch
+        style="margin-left: 20px;width: 100px"
+        v-model="jsonSwitch"
+        on-text="json"
+        off-text="sql"
+        @change="switchJson"
+        on-color="#58B7FF"
+        off-color="#13ce66">
+      </el-switch>
     </div>
     <el-row  >
       <el-col :span="7"> <el-table
@@ -31,16 +42,16 @@
         <el-table-column
           prop="id"
           label=" "
-          width="40px">
+          width="70px">
         </el-table-column>
         <el-table-column
           prop="uri"
           label="请求列表"
-          width="320px">
+          width="300px">
         </el-table-column>
         <el-table-column
           label="状态"
-          width="79px"
+          width="69px"
         >
           <template scope="scope"  >
             <span  v-if="scope.row.state==='true'" style="display:block;color: #FFFFFF;background-color: #20A0FF;width: 100%;height: 100%">{{scope.row.state}}</span>
@@ -49,44 +60,73 @@
             <span v-if="scope.row.state==='error'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
           </template>
         </el-table-column>
-      </el-table></el-col>
-      <el-col :span="10">
+      </el-table>
+
+
+
+      </el-col>
+      <el-col :span="9">
         <el-table
           ref="table"
           @selection-change="handleSelectionChange"
           :data="params"
           border
-          style="width: 100%;margin-top: 10px;">
+          style="width: 576px;margin-top: 10px;">
           <el-table-column
             type="selection"
             width="55">
           </el-table-column>
           <el-table-column
             label="key"
-            width="300">
+            width="230">
             <template scope="scope">
               <el-input v-model="scope.row.name"  size="small"> </el-input>
             </template>
           </el-table-column>
           <el-table-column
           label="value"
-          width="300">
+          width="290">
             <template scope="scope">
               <el-input v-model="scope.row.arg"  size="small"> </el-input>
             </template>
         </el-table-column>
         </el-table>
+
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 2 }"
+          placeholder="请输入BUG描述"
+          style="width: 576px;margin-top: 10px;"
+          v-model="des" >
+        </el-input>
+        <el-steps :space="150" :active="step"   style="margin-top: 10px">
+          <el-step title="正常" description="状态正常的接口"></el-step>
+          <el-step  title="BUGING" description="等待处理的BUG"></el-step>
+          <el-step title="BUGED" description="等待构建,接口不能使用"></el-step>
+          <el-step title="待验证" description="将BUG调整至正常状态"></el-step>
+        </el-steps>
+        <div style="margin-top: 10px;text-align: center">
+          <el-button-group>
+            <el-button type="primary" @click="stepSub" icon="arrow-left"></el-button>
+            <el-button type="primary" @click="putBug" icon="check"></el-button>
+            <el-button type="primary" @click="stepAdd" icon="arrow-right"></el-button>
+          </el-button-group>
+        </div>
       </el-col>
-      <el-col :span="7" >
-        <div style="margin-top: 10px">
+
+      <el-col :span="7">
+        <div   style="margin-top: 10px;margin-left: 20px">
           <!--<el-input
             type="textarea"
             autosize
             placeholder="jsonData"
             v-model="result">
           </el-input>-->
-          <pre>
-            {{result|json}}
+         <!-- <pre>
+             {{result }}
+          </pre>-->
+          <pre class="jsonclass">
+
           </pre>
         </div>
       </el-col>
@@ -104,12 +144,18 @@
        postList:[],       //请求列表
        radio: '1',        //单选
        params:[],         //请求参数
-       result:"dfdsfdsf\nsdfdsfds\ndsfdsf",  //请求结果
+       result:"",  //请求结果
        host:"",   //host
        urlDefault:"", //默认host
        uri:"",    //url
        id:"",       //id
-       result:""     //result
+       result:"",     //result
+       fresult:"",
+       sqlstr:"",
+       jsonSwitch:true, //true json false sql
+       selectParams:"",  //选中参数
+       des:"",
+       step:1
      }
    },
    mounted(){
@@ -143,8 +189,12 @@
          })
      },
      handleSelectionChange:function (value) {
-       //console.log(value)
-     },
+       let params=new Array();
+       for(let i=0;i<value.length;i++) {
+         params.push(value[i].name)
+       }
+       this.selectParams=params;
+     },//参数选中除法
      choose:function(value){
        this.selectName=value
        for(let i=0;i<this.appTableData.length;i++){
@@ -156,7 +206,7 @@
        localStorage.setItem("selectApp",this.selectApp)
      },
      handleRowHandle:function(value){
-       //列表点击事件除法
+
 
        //参数
        let args=value.paramArgs.split(",")
@@ -178,22 +228,35 @@
        //id
        this.id=value.id;
        //result
-       this.result= value.result  ;
-       alert(this.result)
-     },
-     getData(){//获取路径
-       this.$http.get(this.baseUrl+"/url?appCode="+this.selectApp)
+       this.result=value.result
+       this.fresult =this.syntaxHighlight(JSON.parse(value.result))
+       this.sqlStr=value.sqlstr
+       if(this.jsonSwitch) {
+         document.getElementsByClassName('jsonclass')[0].innerHTML = this.fresult;
+       }else{
+         let sqlStr=this.sqlStr.replace(/\?/g,"      \r\n")
+         document.getElementsByClassName('jsonclass')[0].innerHTML =sqlStr+"      "
+       }
+       //des
+       this.des=value.des
+       //step
+       this.step=value.step
+     },//列表点击事件除法
+     getData(){
+       let params=new URLSearchParams();
+       params.append("appCode",this.selectApp)
+       params.append("id",this.id)
+       this.$http.post(this.baseUrl+"/urlHistory",params)
          .then((response)=>{
 
            if(response.data.success){
               this.postList=response.data.list;
-
            }
          })
          .catch((err)=>{
 
          })
-     },
+     },//获取最新路径
      checked(){//选中参数
        for(let i=0;i<this.params.length;i++) {
          this.$refs.table.toggleRowSelection(this.params[i], true);
@@ -219,7 +282,104 @@
      },
      formatJson(json){
         return formatXml(json)
-     }//格式化json
+     },//格式化json
+     syntaxHighlight:function (json) {
+    if (typeof json != 'string') {
+      json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      var cls = 'number';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'key';
+        } else {
+          cls = 'string';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'boolean';
+      } else if (/null/.test(match)) {
+        cls = 'null';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  },
+     switchJson:function(value){
+       if(value) {
+         document.getElementsByClassName('jsonclass')[0].innerHTML = this.result;
+       }else{
+         let sqlStr=this.sqlStr.replace(/\?/g,"      \r\n")
+         document.getElementsByClassName('jsonclass')[0].innerHTML =sqlStr+"      "
+       }
+     },//切换SQL JSON
+     postAgain:function(){
+         let params=new URLSearchParams();
+         for(let i=0;i<this.selectParams.length;i++) {
+           for(let j=0;j<this.params.length;j++){
+             if(this.selectParams[i]==this.params[j].name){
+               params.append(this.selectParams[i],this.params[j].arg);
+               break;
+             }
+           }
+         }
+        console.log(params)
+       this.$http.post(this.host+this.uri,params)
+         .then((response)=>{
+           console.log("response="+response.data)
+           if(response.data.success){
+             this.result=response.data
+             this.fresult =this.syntaxHighlight(this.result)
+             if(this.jsonSwitch) {
+               document.getElementsByClassName('jsonclass')[0].innerHTML = this.fresult;
+             }
+           }
+            this.messageSystem(1);
+         })
+         .catch((err)=>{
+           this.messageSystem(2);
+         })
+     },
+     messageSystem(value){
+       if(value==1){
+         this.$message('请求成功');
+       }else if(value==2){
+         this.$message.error('请求错误,请联系管理员');
+       }else{
+         this.$message.error(value)
+       }
+     },
+     putBug:function(){
+       let id=localStorage.getItem("userId")
+        if(id==0){
+          this.messageSystem("认证用户才能反馈BUG")
+          return;
+        }
+       let params=new URLSearchParams();
+       params.append("des",this.des)
+       params.append("id",this.id)
+       params.append("step",this.step)
+       this.$http.post(this.baseUrl+"/putBug",params)
+         .then((response)=>{
+           if(response.data.success){
+              this.messageSystem(1)
+           }else{
+             this.messageSystem(2)
+           }
+         })
+         .catch((err)=>{
+            this.messageSystem(2)
+         })
+     },//修改bug状态
+     stepSub:function() {
+       if (this.step > 1) {
+       this.step--
+       }
+     },
+     stepAdd:function(){
+       if (this.step <4 ) {
+         this.step++
+       }
+     }
    }
  }
 </script>
@@ -228,5 +388,11 @@
     margin-left: 10px;
     margin-top: 10px;
   }
+  pre {  padding: 5px; margin: 5px; }
+  .string { color: blue; }
+  .number { color: darkorange; }
+  .boolean { color: blue; }
+  .null { color: magenta; }
+  .key { color: black; }
 
 </style>

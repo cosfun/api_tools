@@ -47,8 +47,8 @@
       getUserInfo:function(){
          this.$http.get(this.baseUrl+"/user?phone="+this.phone)
           .then((reponse)=>{
-           console.log(reponse.data)
           if(reponse.data.success) {
+            localStorage.setItem("userId", reponse.data.id)
             this.roleStr = reponse.data.role
             this.nameStr = reponse.data.name
           }
