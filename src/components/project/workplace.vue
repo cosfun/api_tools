@@ -63,12 +63,12 @@
           width="89px"
         >
           <template scope="scope"  >
-            <span  v-if="scope.row.state==='true'" style="display:block;color: #FFFFFF;background-color: #20A0FF;width: 100%;height: 100%">{{scope.row.state}}</span>
+            <span  v-if="scope.row.state==='true'" style="display:block;color: #FFFFFF;background-color: #13CE66;width: 100%;height: 100%">{{scope.row.state}}</span>
             <span v-if="scope.row.state==='false'" style="display:block;color: #FFFFFF;background-color: #13CE66;width: 100%;height: 100%" >{{scope.row.state}}</span>
             <span v-if="scope.row.state==='warn'" style="display:block;color: #FFFFFF;background-color: #F7BA2A;width: 100%;height: 100%">{{scope.row.state}}</span>
             <span v-if="scope.row.state==='bug'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
             <span v-if="scope.row.state==='buged'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
-            <span v-if="scope.row.state==='wait'"style="display:block;color: #FFFFFF;background-color: #FF4949;width: 100%;height: 100%">{{scope.row.state}}</span>
+            <span v-if="scope.row.state==='wait'"style="display:block;color: #FFFFFF;background-color: #20A0FF;width: 100%;height: 100%">{{scope.row.state}}</span>
           </template>
         </el-table-column>
       </el-table>
