@@ -9,7 +9,7 @@ import axios from 'axios'
 Vue.config.productionTip = false
 Vue.use(Element)
 Vue.prototype.$http = axios
-Vue.prototype.baseUrl="http://127.0.0.1:8087/apitools"
+Vue.prototype.baseUrl="http://47.95.119.184:8080/apitools"
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
