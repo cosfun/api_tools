@@ -11,12 +11,20 @@
     </el-dropdown>
       编号
       <el-input v-model="inputid" style="width: 60px"></el-input>
-    <el-button @click="changeType(1)">GET</el-button>
+      <el-tooltip content="获取最近的10个接口,填入编号时获取指定接口,接口编号显示在右上角" placement="top">
+          <el-button @click="changeType(1)">GET</el-button>
+      </el-tooltip>
+      <el-tooltip content="获取指定编号接口的最近30个请求" placement="top">
       <el-button @click="changeType(2)">历史</el-button>
+      </el-tooltip>
+      <el-tooltip content="获取所有异常接口" placement="top">
       <el-button @click="changeType(3)">BUG</el-button>
+      </el-tooltip>
       <el-input v-model="host" style="width: 160px;margin-left: 80px"></el-input>
       <el-input v-model="uri"  style="width: 250px;margin-left: 5px"></el-input>
+      <el-tooltip content="根据参数请求接口(功能存在BUG)" placement="top">
       <el-button @click="postAgain()">请求</el-button>
+      </el-tooltip>
       <el-radio-group v-model="radio" style="margin-left: 20px" @change="change">
         <el-radio :label="1">默认</el-radio>
         <el-radio :label="2">本地</el-radio>
@@ -111,7 +119,9 @@
         <div style="margin-top: 10px;text-align: center">
           <el-button-group>
             <el-button type="primary" @click="stepSub" icon="arrow-left"></el-button>
+            <el-tooltip content="保存BUG描述，将BUG状态切换至选中" placement="top">
             <el-button type="primary" @click="putBug" icon="check"></el-button>
+            </el-tooltip>
             <el-button type="primary" @click="stepAdd" icon="arrow-right"></el-button>
           </el-button-group>
         </div>

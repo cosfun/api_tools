@@ -5,6 +5,7 @@ import index from '@/components/index/index'
 import persional from '@/components/info/persional'
 import project from '@/components/info/project'
 import workplace from '@/components/project/workplace'
+import point from '@/components/point/point'
 
 Vue.use(Router)
 
@@ -29,6 +30,10 @@ export default new Router({
     {
       path:'/workplace',
       component:workplace
+    },
+    {
+      path:'/point',
+      component:point
     }
   ]
 })
